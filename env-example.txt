@@ -56,3 +56,6 @@ REDIS_VOLUME=
 
 MYSQL_USER=admin
 MYSQL_ROOT_PASSWORD=admin
+
+#Compose File
+COMPOSE_FILE=docker-compose.local.yml
