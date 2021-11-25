@@ -1,0 +1,173 @@
+version: "3.9"
+services:
+  ui:
+    container_name: ui
+    image: ${UI_IMAGE}
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${UI_PORT}
+      - ${UI_PORT_SSL}
+  adoption-form-service:
+    container_name: adoption-form-service
+    image: ${ADOPTION_FORM_SERVICE_IMAGE}
+    depends_on:
+      - mariadb
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${ADOPTION_FORM_SERVICE_PORT}
+  api-gateway:
+    container_name: api-gateway
+    image: ${API_GATEWAY_IMAGE}
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${API_GATEWAY_PORT}
+  auth-service:
+    container_name: auth-service
+    image: ${AUTH_SERVICE_IMAGE}
+    restart: always
+    depends_on:
+      - mariadb
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${AUTH_SERVICE_PORT}
+  cart-service:
+    container_name: cart-service
+    image: ${CART_SERVICE_IMAGE}
+    depends_on:
+      - mariadb
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${CART_SERVICE_PORT}
+  chat-service:
+    container_name: chat-service
+    image: ${CHAT_SERVICE_IMAGE}
+    depends_on:
+      - mariadb
+      - redis
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${CHAT_SERVICE_PORT}
+  configuration-service:
+    container_name: configuration-service
+    image: ${CONFIGURATION_SERVICE_IMAGE}
+    depends_on:
+      - mariadb
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${CONFIGURATION_SERVICE_PORT}
+  match-dashboard-service:
+    container_name: match-dashboard-service
+    image: ${MATCH_DASHBOARD_SERVICE_IMAGE}
+    depends_on:
+      - mariadb
+      - redis
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${MATCH_DASHBOARD_SERVICE_PORT}
+  payment-gateway-service:
+    container_name: payment-gateway-service
+    image: ${PAYMENT_GATEWAY_SERVICE_IMAGE}
+    depends_on:
+      - mariadb
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${PAYMENT_GATEWAY_SERVICE_PORT}
+  pet-finder-service:
+    container_name: pet-finder-service
+    image: ${PET_FINDER_SERVICE_IMAGE}
+    depends_on:
+      - mariadb
+      - redis
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${PET_FINDER_SERVICE_PORT}
+  pet-services:
+    container_name: pet-services
+    image: ${PET_SERVICES_IMAGE}
+    depends_on:
+      - mariadb
+      - redis
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${PET_SERVICES_PORT}
+  profile-service:
+    container_name: profile-service
+    image: ${PROFILE_SERVICE_IMAGE}
+    depends_on:
+      - mariadb
+      - redis
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${PROFILE_SERVICE_PORT}
+  store-service:
+    container_name: store-service
+    image: ${STORE_SERVICE_IMAGE}
+    depends_on:
+      - mariadb
+      - redis
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${STORE_SERVICE_PORT}
+  redis:
+    container_name: redis
+    image: ${REDIS_IMAGE}
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${REDIS_PORT}
+    volumes:
+      - ${REDIS_VOLUME}:/data
+  redis-commander:
+    container_name: redis-commander
+    image: ${REDIS_COMMANDER_IMAGE}
+    depends_on:
+      - redis
+    restart: always
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${REDIS_COMMANDER_PORT}
+  mariadb:
+    container_name: mariadb
+    image: ${MARIADB_IMAGE}
+    restart: always
+    environment:
+      - MYSQL_USER= ${MYSQL_USER}
+      - MYSQL_ROOT_PASSWORD= ${MYSQL_ROOT_PASSWORD}
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${MARIADB_PORT}
+    volumes:
+      - ${MARIADB_VOLUME}:/var/lib/mysql
+
+networks:
+  ${NETWORK_NAME}:
+    external:
+      name: ${NETWORK_NAME}
