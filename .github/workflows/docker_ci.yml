@@ -1,7 +1,7 @@
 name: Docker Image CI
 
 on:
-  workflow_dispatch: 
+  workflow_call:
 
 env:
   # Use docker.io for Docker Hub if empty
