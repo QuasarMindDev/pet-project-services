@@ -27,16 +27,6 @@ services:
       - ${NETWORK_NAME}
     ports:
       - ${API_GATEWAY_PORT}
-  auth-service:
-    container_name: auth-service
-    image: ${AUTH_SERVICE_IMAGE}
-    restart: always
-    depends_on:
-      - mariadb
-    networks:
-      - ${NETWORK_NAME}
-    ports:
-      - ${AUTH_SERVICE_PORT}
   cart-service:
     container_name: cart-service
     image: ${CART_SERVICE_IMAGE}

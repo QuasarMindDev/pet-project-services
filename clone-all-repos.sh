@@ -20,7 +20,6 @@ git clone https://github.com/CJN-Team/pet-project-pet-services.git && \
 git clone https://github.com/CJN-Team/pet-project-configuration.git && \
 git clone https://github.com/CJN-Team/pet-project-profile.git && \
 git clone https://github.com/CJN-Team/pet-project-pet-finder.git && \
-git clone https://github.com/CJN-Team/pet-project-auth.git && \
 
 # Api Gateway
 git clone https://github.com/CJN-Team/pet-project-api-gateway.git
