@@ -1,17 +1,5 @@
 version: "3.9"
 services:
-  adoption-form-service:
-    container_name: adoption-form-service
-    build:
-      context: ../backend/pet-project-adoption-form/
-      dockerfile: Dockerfile
-    depends_on:
-      - mariadb
-    restart: always
-    networks:
-      - ${NETWORK_NAME}
-    ports:
-      - ${ADOPTION_FORM_SERVICE_PORT}
   api-gateway:
     container_name: api-gateway
     build:
@@ -22,132 +10,45 @@ services:
       - ${NETWORK_NAME}
     ports:
       - ${API_GATEWAY_PORT}
-  auth-service:
-    container_name: auth-service
-    build:
-      context: ../backend/pet-project-auth/
-      dockerfile: Dockerfile
-    restart: always
-    depends_on:
-      - mariadb
-    networks:
-      - ${NETWORK_NAME}
-    ports:
-      - ${AUTH_SERVICE_PORT}
-  cart-service:
-    container_name: cart-service
-    build:
-      context: ../backend/pet-project-cart/
-      dockerfile: Dockerfile
-    depends_on:
-      - mariadb
-    restart: always
-    networks:
-      - ${NETWORK_NAME}
-    ports:
-      - ${CART_SERVICE_PORT}
   chat-service:
     container_name: chat-service
     build:
       context: ../backend/pet-project-chat/
       dockerfile: Dockerfile
     depends_on:
-      - mariadb
+      - mongodb
       - redis
     restart: always
     networks:
       - ${NETWORK_NAME}
     ports:
       - ${CHAT_SERVICE_PORT}
-  configuration-service:
-    container_name: configuration-service
-    build:
-      context: ../backend/pet-project-configuration/
-      dockerfile: Dockerfile
-    depends_on:
-      - mariadb
-    restart: always
-    networks:
-      - ${NETWORK_NAME}
-    ports:
-      - ${CONFIGURATION_SERVICE_PORT}
-  match-dashboard-service:
-    container_name: match-dashboard-service
-    build:
-      context: ../backend/pet-project-match-dashboard/
-      dockerfile: Dockerfile
-    depends_on:
-      - mariadb
-      - redis
-    restart: always
-    networks:
-      - ${NETWORK_NAME}
-    ports:
-      - ${MATCH_DASHBOARD_SERVICE_PORT}
-  payment-gateway-service:
-    container_name: payment-gateway-service
-    build:
-      context: ../backend/pet-project-payment-gateway/
-      dockerfile: Dockerfile
-    depends_on:
-      - mariadb
-    restart: always
-    networks:
-      - ${NETWORK_NAME}
-    ports:
-      - ${PAYMENT_GATEWAY_SERVICE_PORT}
-  pet-finder-service:
-    container_name: pet-finder-service
+  finder-service:
+    container_name: finder-service
     build:
       context: ../backend/pet-project-pet-finder/
       dockerfile: Dockerfile
     depends_on:
-      - mariadb
+      - mongodb
       - redis
     restart: always
     networks:
       - ${NETWORK_NAME}
     ports:
-      - ${PET_FINDER_SERVICE_PORT}
-  pet-services:
-    container_name: pet-services
-    build:
-      context: ../backend/pet-project-pet-services/
-      dockerfile: Dockerfile
-    depends_on:
-      - mariadb
-      - redis
-    restart: always
-    networks:
-      - ${NETWORK_NAME}
-    ports:
-      - ${PET_SERVICES_PORT}
+      - ${FINDER_SERVICE_PORT}
   profile-service:
     container_name: profile-service
     build:
       context: ../backend/pet-project-profile/
       dockerfile: Dockerfile
     depends_on:
-      - mariadb
+      - mongodb
       - redis
     restart: always
     networks:
       - ${NETWORK_NAME}
     ports:
       - ${PROFILE_SERVICE_PORT}
-  store-service:
-    container_name: store-service
-    build:
-      context: ../backend/pet-project-store/
-      dockerfile: Dockerfile
-    depends_on:
-      - mariadb
-      - redis
-    restart: always
-    networks:
-      - ${NETWORK_NAME}
-    ports:
-      - ${STORE_SERVICE_PORT}
   redis:
     container_name: redis
     image: ${REDIS_IMAGE}
@@ -168,19 +69,31 @@ services:
       - ${NETWORK_NAME}
     ports:
       - ${REDIS_COMMANDER_PORT}
-  mariadb:
-    container_name: mariadb
-    image: ${MARIADB_IMAGE}
+  mongodb:
+    container_name: mongodb
+    image: ${MONGO_IMAGE}
     restart: always
     environment:
-      - MYSQL_USER= ${MYSQL_USER}
-      - MYSQL_ROOT_PASSWORD= ${MYSQL_ROOT_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     networks:
       - ${NETWORK_NAME}
     ports:
-      - ${MARIADB_PORT}
+      - ${MONGO_PORT}
     volumes:
-      - ${MARIADB_VOLUME}:/var/lib/mysql
+      - ${MONGO_VOLUME}:/var/lib/mongo
+  mongo-express:
+    container_name: mongo-express
+    image: ${MONGO_EXPRESS_IMAGE}
+    restart: always
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME: ${ME_USER}
+      - ME_CONFIG_MONGODB_ADMINPASSWORD: ${ME_ROOT_PASSWORD}
+      - ME_CONFIG_MONGODB_URL: ${ME_URL}
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - ${ME_PORT}
 
 networks:
   pet-network:
