@@ -1,0 +1,61 @@
+name: Destroy Azure Container Group
+
+on:
+  repository_dispatch:
+    types: [destroy-container]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set environment specific variables
+      uses: jnus/json-variables@v1.0
+      with:
+        scope: deploy
+        configFile: './Variables/Actions.json'
+        secrets: '${{ toJson(secrets) }}'
+
+    - name: Get Params
+      run: |
+          echo -e '\napp_name = "${{ github.event.client_payload.app_name }}"' >> ./Terraform/Container_Infrastructure/terraform.tfvars
+          echo -e '\ncontainers = [${{ github.event.client_payload.containers }}]' >> ./Terraform/Container_Infrastructure/terraform.tfvars
+          echo -e '\napp_name_api = "${{ github.event.client_payload.app_name_api }}"' >> ./Terraform/Container_Infrastructure/terraform.tfvars
+          echo -e '\napp_name_display_name = "${{ github.event.client_payload.app_name_display_name }}"' >> ./Terraform/Container_Infrastructure/terraform.tfvars
+          echo -e '\napp_description = "${{ github.event.client_payload.app_description }}"' >> ./Terraform/Container_Infrastructure/terraform.tfvars
+          echo -e '\napp_path = "${{ github.event.client_payload.app_path }}"' >> ./Terraform/Container_Infrastructure/terraform.tfvars
+
+    - name: create-json
+      id: create-json
+      uses: jsdaniell/create-json@v1.2.2
+      with:
+        name: "swagger.json"
+        json: ${{ github.event.client_payload.content }}
+        dir: './Terraform/Container_Infrastructure/'
+
+    - name: Configure Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: "1.4.2"
+
+    - name: Login via Az module
+      uses: azure/login@v1.1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS}}
+
+    - name: Terraform Init
+      run: terraform -chdir=./Terraform/Container_Infrastructure init
+
+    - name: Check if Container Group exists
+      run: |
+        terraform -chdir=./Terraform/Container_Infrastructure plan -var-file="terraform.tfvars" -out=tfplan
+        cg=$(az container show --name ${{ github.event.client_payload.app_name }} --resource-group ${{env.RESOURCE_GROUP}} --query "id" -o tsv || echo "not_found")
+        if [ "$cg" = "not_found" ]; then
+          echo "Container Group not found in Azure. Exiting..."
+        else
+          terraform -chdir=./Terraform/Container_Infrastructure import module.${{env.CONTAINER_GROUP_MODULE}}.azurerm_container_group.${{env.CONTAINER_GROUP_MODULE}} /subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourceGroups/${{env.RESOURCE_GROUP}}/providers/Microsoft.ContainerInstance/containerGroups/${{ github.event.client_payload.app_name }}
+          terraform -chdir=./Terraform/Container_Infrastructure import module.${{env.API_MODULE}}.azurerm_api_management_api.${{env.API_MODULE}} /subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourceGroups/${{env.RESOURCE_GROUP}}/providers/Microsoft.ApiManagement/service/${{env.APIM}}/apis/${{github.event.client_payload.app_name_api}}
+          terraform -chdir=./Terraform/Container_Infrastructure destroy -auto-approve
+        fi

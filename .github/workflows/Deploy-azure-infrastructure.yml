@@ -1,0 +1,74 @@
+name: Deploy Azure Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set environment specific variables
+      uses: jnus/json-variables@v1.0
+      with:
+        scope: deploy
+        configFile: './Variables/Actions.json'
+        secrets: '${{ toJson(secrets) }}'
+
+    - name: Configure Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: "1.4.2"
+
+    - name: Login via Az module
+      uses: azure/login@v1.1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS}}
+
+    - name: Terraform Init
+      run: terraform -chdir=./Terraform/Base_Infrastructure init
+
+    - name: Terraform Plan
+      id: plan
+      run: terraform -chdir=./Terraform/Base_Infrastructure plan -var-file="terraform.tfvars" -out=tfplan
+
+    - name: Check if resource group exists
+      id: check_rg
+      run: |
+        rg=$(az group show --name ${{env.RESOURCE_GROUP}} --subscription ${{secrets.AZURE_SUBSCRIPTION_ID}} --query "name" -o tsv || echo "not_found")
+        if [ "$rg" = "not_found" ]; then
+          echo "Resource group not found in Azure. Exiting..."
+        else
+          terraform -chdir=./Terraform/Base_Infrastructure import module.${{env.RESOURCE_GROUP_MODULE}}.azurerm_resource_group.${{env.RESOURCE_GROUP_MODULE}} /subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourceGroups/${{env.RESOURCE_GROUP}}
+        fi
+
+    - name: Check if key vault exists
+      id: check_kv
+      run: |
+        kv=$(az keyvault show --name ${{env.KEY_VAULT}} --subscription ${{secrets.AZURE_SUBSCRIPTION_ID}} --query "name" -o tsv || echo "not_found")
+        if [ "$kv" = "not_found" ]; then
+          echo "Key Vault not found in Azure. Exiting..."
+        else
+          terraform -chdir=./Terraform/Base_Infrastructure import module.${{env.KEY_VAULT_MODULE}}.azurerm_key_vault.${{env.KEY_VAULT_MODULE}} /subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourceGroups/${{env.RESOURCE_GROUP}}/providers/Microsoft.KeyVault/vaults/${{env.KEY_VAULT}}
+        fi
+
+    - name: Check if apim exists
+      id: check_apim
+      run: |
+        apim=$(az apim show --name ${{env.APIM}} --resource-group ${{env.RESOURCE_GROUP}} --subscription ${{secrets.AZURE_SUBSCRIPTION_ID}} --query "name" -o tsv || echo "not_found")
+        if [ "$apim" = "not_found" ]; then
+          echo "API Management instance not found in Azure. Exiting..."
+        else
+          terraform -chdir=./Terraform/Base_Infrastructure import module.${{env.APIM_MODULE}}.azurerm_api_management.${{env.APIM_MODULE}} /subscriptions/${{secrets.AZURE_SUBSCRIPTION_ID}}/resourceGroups/${{env.RESOURCE_GROUP}}/providers/Microsoft.ApiManagement/service/${{env.APIM}}
+        fi
+
+    - name: Terraform Plan
+      run: terraform -chdir=./Terraform/Base_Infrastructure plan -var-file="terraform.tfvars" -out=tfplan
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: terraform -chdir=./Terraform/Base_Infrastructure apply -auto-approve tfplan

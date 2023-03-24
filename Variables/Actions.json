@@ -1,0 +1,94 @@
+{
+    "Variables": [
+      {
+        "Name": "API",
+        "Value": "pet-app-api",
+        "Scope": {
+            "Environment": [
+              "Deploy"
+            ]
+        }
+      },
+      {
+        "Name": "API_MODULE",
+        "Value": "pet_app_api",
+        "Scope": {
+            "Environment": [
+              "Deploy"
+            ]
+        }
+      },
+      {
+        "Name": "APIM",
+        "Value": "pet-app-apim",
+        "Scope": {
+            "Environment": [
+              "Deploy"
+            ]
+        }
+      },
+      {
+        "Name": "APIM_MODULE",
+        "Value": "pet_app_apim",
+        "Scope": {
+            "Environment": [
+              "Deploy"
+            ]
+        }
+      },
+      {
+        "Name": "CONTAINER_GROUP",
+        "Value": "pet-app-cg",
+        "Scope": {
+            "Environment": [
+              "Deploy"
+            ]
+        }
+      },
+      {
+        "Name": "CONTAINER_GROUP_MODULE",
+        "Value": "pet_app_cg",
+        "Scope": {
+            "Environment": [
+              "Deploy"
+            ]
+        }
+      },
+      {
+        "Name": "KEY_VAULT",
+        "Value": "pet-app-kv",
+        "Scope": {
+            "Environment": [
+              "Deploy"
+            ]
+        }
+      },
+      {
+        "Name": "KEY_VAULT_MODULE",
+        "Value": "pet_app_kv",
+        "Scope": {
+            "Environment": [
+              "Deploy"
+            ]
+        }
+      },
+      {
+        "Name": "RESOURCE_GROUP",
+        "Value": "pet-app-rg",
+        "Scope": {
+            "Environment": [
+              "Deploy"
+            ]
+        }
+      },
+      {
+        "Name": "RESOURCE_GROUP_MODULE",
+        "Value": "pet_app_rg",
+        "Scope": {
+            "Environment": [
+              "Deploy"
+            ]
+        }
+      }
+    ]
+}
